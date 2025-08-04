@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moin Khot - Gaming, AI, and Web3 Brand & Content Strategist</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --primary-color: #2c3e50;
+            --accent-color: #4a90e2;
+            --text-color: #333333;
+            --text-muted-color: #777777;
+            --card-bg-color: #ffffff;
+            --border-color: #e0e0e0;
+            --shadow-light: rgba(0, 0, 0, 0.05);
+            --shadow-dark: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Lato', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+        
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        /* --- Custom Cursor --- */
+        .cursor {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            pointer-events: none;
+            z-index: 10001; /* Above modal */
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, opacity 0.3s;
+        }
+        
+        .cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--accent-color);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10001; /* Above modal */
+            transform: translate(-50%, -50%);
+            transition: transform 0.4s ease-out, background-color 0.3s, opacity 0.3s;
+        }
+        
+        body.link-hover .cursor {
+            width: 30px;
+            height: 30px;
+        }
+        
+        body.link-hover .cursor-follower {
+            opacity: 0.5;
+            transform: translate(-50%, -50%) scale(1.5);
+        }
+
+        /* --- Loading Screen --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.8s ease-in-out;
+        }
+        #loading-screen .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* --- Navigation --- */
+        #main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 25px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transition: transform 0.4s ease, background-color 0.4s, padding 0.4s, box-shadow 0.4s;
+        }
+
+        #main-nav.sticky {
+            background-color: var(--card-bg-color);
+            padding: 15px 5%;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        #main-nav.nav-hidden {
+            transform: translateY(-100%);
+        }
+
+        #main-nav .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-family: 'Playfair Display', serif;
+        }
+
+        #main-nav .nav-links a {
+            color: var(--text-muted-color);
+            text-decoration: none;
+            margin-left: 40px;
+            font-weight: 700;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        
+        #main-nav .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--accent-color);
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-out;
+        }
+
+        #main-nav .nav-links a:hover {
+            color: var(--primary-color);
+        }
+        
+        #main-nav .nav-links a:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        /* --- Hero Section --- */
+        #hero {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #thread-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 900px;
+            padding: 0 20px;
+        }
+        
+        .hero-content h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 8vw, 6rem);
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .hero-content .subtitle {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-muted-color);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hero-content p {
+            font-size: 1.1rem;
+            color: var(--text-muted-color);
+            line-height: 1.8;
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        /* --- General Section Styling --- */
+        .section {
+            padding: 120px 8%;
+            position: relative;
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted-color);
+            margin-bottom: 80px;
+            max-width: 500px;
+        }
+
+        /* --- Parallax Background --- */
+        .has-parallax-bg {
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .has-parallax-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: 0;
+            width: 100%;
+            height: 200%;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><g fill-rule="evenodd"><g fill="%23e0e0e0" fill-opacity="0.4"><path d="M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z"/></g></g></svg>');
+            background-repeat: repeat;
+            z-index: -1;
+            transform: translateY(var(--parallax-y, 0));
+            will-change: transform;
+        }
+
+        .parallax-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- Soft UI Card Style --- */
+        .soft-card {
+            background: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 5px 5px 15px var(--shadow-light), -5px -5px 15px #ffffff;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .soft-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 10px 10px 25px var(--shadow-dark), -10px -10px 25px #ffffff;
+        }
+        
+        .soft-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .soft-card li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+            color: var(--text-muted-color);
+            line-height: 1.7;
+        }
+        
+        .soft-card li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+
+        /* --- Where It All Started Section --- */
+        #where-it-started .content-wrapper {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 60px;
+            align-items: center;
+        }
+
+        #where-it-started .text-content h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        #where-it-started .text-content p {
+            color: var(--text-muted-color);
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        #where-it-started .lesson {
+            font-style: italic;
+            font-weight: 700;
+            color: var(--primary-color);
+            border-left: 4px solid var(--accent-color);
+            padding-left: 20px;
+        }
+
+        #where-it-started .metrics-card {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .metric-item {
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+        }
+        
+        .metric-item .label {
+            font-weight: 700;
+            color: var(--primary-color);
+            width: 120px;
+        }
+        
+        .metric-item .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        
+        .metric-item .description {
+            color: var(--text-muted-color);
+        }
+
+        /* --- Career Journey Section --- */
+        #career-journey {
+            background-color: #fff;
+        }
+        
+        #career-journey .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 50px 0;
+        }
+
+        #career-journey .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--border-color);
+            transform: translateX(-50%);
+        }
+        
+        #career-journey .timeline-line-progress {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 3px;
+            background: var(--accent-color);
+            transform: translateX(-50%);
+            height: 0; /* Animated by GSAP */
+        }
+
+        .timeline-item {
+            padding: 20px 40px;
+            position: relative;
+            width: 50%;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        
+        .timeline-item .timeline-content {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .timeline-item .timeline-content:hover {
+            background-color: #fafafa;
+        }
+        
+        .timeline-item.left {
+            left: 0;
+            padding-right: 60px;
+            text-align: right;
+        }
+
+        .timeline-item.right {
+            left: 50%;
+            padding-left: 60px;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(74, 144, 226, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(74, 144, 226, 0);
+            }
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 40px;
+            background-color: var(--bg-color);
+            border: 4px solid var(--accent-color);
+            border-radius: 50%;
+            z-index: 1;
+            animation: pulse 2s infinite;
+        }
+        
+        .timeline-item.left::after { right: -10px; }
+        .timeline-item.right::after { left: -10px; }
+
+        .timeline-content h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .timeline-content .tagline {
+            font-weight: 700;
+            color: var(--text-muted-color);
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .timeline-content p {
+            color: var(--text-muted-color);
+            line-height: 1.7;
+        }
+        
+        .timeline-content .lesson {
+            margin-top: 15px;
+            font-weight: 700;
+            font-style: italic;
+            color: var(--primary-color);
+        }
+
+        /* --- What I Do Section --- */
+        #what-i-do .skills-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        
+        #what-i-do .skills-chart-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        #what-i-do .skills-description .skill-item {
+            margin-bottom: 25px;
+        }
+        
+        #what-i-do .skills-description h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        #what-i-do .skills-description p {
+            color: var(--text-muted-color);
+            line-height: 1.7;
+        }
+        
+        /* --- How I Think Section --- */
+        #how-i-think .content-wrapper {
+            display: flex;
+            gap: 50px;
+            align-items: stretch;
+        }
+        #how-i-think .soft-card {
+            flex: 1;
+        }
+        #how-i-think .soft-card h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        #how-i-think .soft-card p {
+            color: var(--text-muted-color);
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        #how-i-think .soft-card ul li {
+            padding-left: 0;
+        }
+        #how-i-think .soft-card ul li::before {
+            content: '';
+        }
+
+        /* --- Philosophy Section --- */
+        #philosophy {
+            background-color: var(--primary-color);
+            color: #fff;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #philosophy-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        #philosophy .parallax-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        #philosophy .section-title {
+            color: #fff;
+            margin-bottom: 40px;
+        }
+
+        .philosophy-divider {
+            width: 80px;
+            height: 3px;
+            background-color: var(--accent-color);
+            margin: 0 auto 40px;
+            border-radius: 2px;
+        }
+        
+        #philosophy .quote {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-style: italic;
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            color: #fff;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+        
+        #philosophy .explanation {
+            max-width: 800px;
+            margin: 0 auto 60px;
+            color: #e0e0e0;
+            line-height: 1.8;
+        }
+        
+        #philosophy .comparison {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            text-align: left;
+        }
+        
+        #philosophy .soft-card {
+            flex: 1;
+            max-width: 400px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: none;
+        }
+        
+        #philosophy .soft-card h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #philosophy .soft-card p {
+            color: #e0e0e0;
+        }
+        
+        #philosophy .soft-card .icon {
+            width: 24px;
+            height: 24px;
+            stroke: var(--accent-color);
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        /* --- Next Challenge Section --- */
+        #next-challenge .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        #next-challenge .intro-text {
+            grid-column: 1 / -1;
+            max-width: 800px;
+        }
+        #next-challenge .intro-text p {
+            color: var(--text-muted-color);
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        #next-challenge .soft-card h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        /* --- Contact Section --- */
+        #contact {
+            text-align: center;
+        }
+
+        #contact .intro-text {
+            max-width: 700px;
+            margin: 0 auto 30px auto;
+            line-height: 1.8;
+            color: var(--text-muted-color);
+        }
+        
+        .contact-card {
+            max-width: 700px;
+            margin: 0 auto 40px auto;
+            padding: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .contact-detail {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .contact-detail .icon {
+            width: 28px;
+            height: 28px;
+            stroke: var(--accent-color);
+            stroke-width: 1.5px;
+        }
+        
+        .contact-detail-text h4 {
+            font-size: 1rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            text-align: left;
+        }
+        
+        .contact-detail-text p {
+            color: var(--text-muted-color);
+            text-align: left;
+        }
+        
+        .connect-prompt {
+            color: var(--text-muted-color);
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .connect-btn {
+            display: inline-block;
+            padding: 16px 35px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .connect-btn.primary {
+            background-color: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(74, 144, 226, 0.2);
+        }
+        
+        .connect-btn.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 13px 25px rgba(74, 144, 226, 0.3);
+        }
+        
+        .connect-btn.secondary {
+            background-color: transparent;
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .connect-btn.secondary:hover {
+            background-color: var(--accent-color);
+            color: #fff;
+            transform: translateY(-3px);
+        }
+        
+        .link-up-prompt {
+            color: var(--text-muted-color);
+            font-style: italic;
+        }
+        
+        /* --- Modal Styles --- */
+        #modal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        
+        #modal-container.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg-color);
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.4s ease;
+        }
+        
+        #modal-container.visible .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: var(--bg-color);
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: var(--text-muted-color);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            transform: rotate(90deg);
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .modal-details {
+            display: none;
+        }
+        
+        .modal-details.active {
+            display: block;
+        }
+        
+        .modal-details h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .modal-details h3 {
+            color: var(--text-muted-color);
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+        
+        .modal-section-title {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-top: 25px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+        
+        .modal-section-title:first-of-type {
+            margin-top: 0;
+        }
+        
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+            align-items: center;
+        }
+        
+        .modal-grid.single-item {
+            grid-template-columns: 1fr;
+            justify-items: center;
+            max-width: 500px;
+            margin: 30px auto 0;
+        }
+        
+        .modal-grid img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px var(--shadow-light);
+        }
+        
+        .modal-grid .chart-container {
+            width: 100%;
+            height: 250px;
+        }
+
+        /* --- Back to Top Button --- */
+        #back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            color: #fff;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+            z-index: 9997;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        #back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        #back-to-top svg {
+            width: 24px;
+            height: 24px;
+        }
+
+
+        /* --- Responsive Design --- */
+        @media (max-width: 900px) {
+            .section-title { font-size: 2.8rem; }
+            #where-it-started .content-wrapper,
+            #how-i-think .content-wrapper,
+            #next-challenge .grid,
+            #what-i-do .skills-layout,
+            #philosophy .comparison { 
+                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+            
+            #how-i-think .content-wrapper {
+                flex-direction: column;
+            }
+            
+            #career-journey .timeline-line, #career-journey .timeline-line-progress { left: 20px; }
+            .timeline-item { width: 100%; padding: 20px 0 20px 60px; text-align: left !important; }
+            .timeline-item.left, .timeline-item.right { left: 0; }
+            .timeline-item::after { left: 10px; }
+            
+            .modal-grid { grid-template-columns: 1fr; }
+            #philosophy .comparison {
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #main-nav .nav-links { display: none; }
+            .section { padding: 80px 5%; }
+            .contact-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Audio elements for sound effects -->
+    <audio id="audio-swoosh" src="https://assets.codepen.io/605876/swoosh.mp3" preload="auto"></audio>
+    <audio id="audio-click" src="https://assets.codepen.io/605876/click.mp3" preload="auto"></audio>
+    <audio id="audio-chime" src="https://assets.codepen.io/605876/chime.mp3" preload="auto"></audio>
+
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="logo">MK</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="main-nav">
+        <div class="logo magnetic">Moin Khot.</div>
+        <div class="nav-links">
+            <a href="#career-journey" class="magnetic">Journey</a>
+            <a href="#what-i-do" class="magnetic">Skills</a>
+            <a href="#philosophy" class="magnetic">Philosophy</a>
+            <a href="#contact" class="magnetic">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero">
+        <canvas id="thread-canvas"></canvas>
+        <div class="hero-content">
+            <h1>MOIN KHOT'S PORTFOLIO</h1>
+            <p class="subtitle">HI THERE! I'M MOIN KHOT</p>
+            <p>I've spent the last decade building brands and creating content in gaming, AI, and Web3. What started as a curious 13-year-old experimenting with Facebook pages has evolved into a career helping startups and established companies connect with their audiences through authentic growth that actually converts. Currently based in Mumbai, I've worked across gaming, AI, and Web3 brands, always focusing on one thing: building communities that care.</p>
+        </div>
+    </section>
+    
+    <!-- Wrapper for content -->
+    <div class="content-wrapper">
+
+        <!-- Where It All Started -->
+        <section id="where-it-started" class="section">
+            <div class="content-wrapper">
+                <div class="text-content">
+                    <h2 class="section-title">Where It All Started.</h2>
+                    <p class="section-subtitle">PLOT TWIST: The cringey celebrity fanpage that taught me everything</p>
+                    <p>Back in 2013, when I was just 13, I grew a Facebook fanpage to 25,000 followers. Celebrity fanpage? Guilty as charged. Proud of it now? Not exactly. But it taught me the foundation of everything I do today: people connect with content that speaks to them.</p>
+                    <p>That early taste of building something from nothing stuck with me. By 14, I had another page at 15,000 followers. Looking back, those were my first lessons in understanding what makes content work.</p>
+                    <p class="lesson">THE LESSON: Sometimes your biggest breakthroughs come from just trying things out.</p>
+                </div>
+                <div class="soft-card metrics-card">
+                    <div class="metric-item">
+                        <div class="label">Age:</div>
+                        <div class="value">13-14</div>
+                        <div class="description">years old</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="label">Achievement:</div>
+                        <div class="value animated-number" data-target="25000">0</div>
+                        <div class="description">followers on first page</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="label">Second page:</div>
+                        <div class="value animated-number" data-target="15000">0</div>
+                        <div class="description">followers</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="label">Key Win:</div>
+                        <p>Discovered content that resonates travels fast</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Career Journey -->
+        <section id="career-journey" class="section">
+            <h2 class="section-title" style="text-align: center;">Career Journey.</h2>
+            <p class="section-subtitle" style="text-align: center; margin: 0 auto 80px auto;">a quick look back...</p>
+            <div class="timeline">
+                <div class="timeline-line"></div>
+                <div class="timeline-line-progress"></div>
+                
+                <div class="timeline-item left" data-modal-id="esports91">
+                    <div class="timeline-content">
+                        <h3>Esports91</h3>
+                        <span class="tagline">Career Foundation</span>
+                    </div>
+                </div>
+                <div class="timeline-item right" data-modal-id="afk-gaming">
+                    <div class="timeline-content">
+                        <h3>AFK Gaming</h3>
+                        <span class="tagline">Understanding Content</span>
+                    </div>
+                </div>
+                <div class="timeline-item left" data-modal-id="talkesport">
+                    <div class="timeline-content">
+                        <h3>TalkEsport</h3>
+                        <span class="tagline">My First Head Role</span>
+                    </div>
+                </div>
+                <div class="timeline-item right" data-modal-id="skor">
+                    <div class="timeline-content">
+                        <h3>SKOR</h3>
+                        <span class="tagline">The Web3 Learning Curve</span>
+                    </div>
+                </div>
+                <div class="timeline-item left" data-modal-id="battlebucks">
+                    <div class="timeline-content">
+                        <h3>BattleBucks</h3>
+                        <span class="tagline">Consultancy Project</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- What I Do Section -->
+        <section id="what-i-do" class="section">
+            <div class="parallax-content">
+                <h2 class="section-title">What I Actually Do.</h2>
+                <p class="section-subtitle">Sure, follower counts and growth percentages look good on paper. But here's what I really bring to the table:</p>
+                <div class="skills-layout">
+                    <div class="skills-chart-container">
+                        <canvas id="skills-radar-chart"></canvas>
+                    </div>
+                    <div class="skills-description">
+                        <div class="skill-item">
+                            <h3>Content That Connects</h3>
+                            <p>I don't just write posts, I start conversations. My approach has evolved from seeking pure originality to mastering the art of inspiration fusion - taking proven concepts and translating them for specific audiences.</p>
+                        </div>
+                        <div class="skill-item">
+                            <h3>Community Building</h3>
+                            <p>Growing followers who actually care about what you're doing. After years of watching what resonates and what fails, I've developed industry intuition for spotting trends before they blow up.</p>
+                        </div>
+                        <div class="skill-item">
+                            <h3>Cross-Platform Strategy</h3>
+                            <p>Each platform has its own language and algorithm requirements. From Instagram's engagement-focused content buckets to Twitter's real-time conversation dynamics, I speak all of them fluently.</p>
+                        </div>
+                        <div class="skill-item">
+                            <h3>Gaming and Web3 Expertise</h3>
+                            <p>My foundation in gaming provided the pattern recognition to master Web3's unique landscape. I navigate the nuances of both, from engagement-focused gaming content to the transparency and trust-building required in Web3.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How I Think Section -->
+        <section id="how-i-think" class="section has-parallax-bg">
+            <div class="parallax-content">
+                <h2 class="section-title">How I Think About Content.</h2>
+                <div class="content-wrapper">
+                    <div class="soft-card">
+                         <p>Content creation isn't about being the most creative person in the room - it's about being the best translator. I take proven concepts and ask: How does this work for my specific audience?</p>
+                        <h3>My Evolution:</h3>
+                        <ul>
+                            <li><strong>2019-2021:</strong> Original ideas only (ego-driven)</li>
+                            <li><strong>2022-2024:</strong> Inspiration + fusion (results-driven)</li>
+                            <li><strong>2025+:</strong> Industry intuition + strategic adaptation</li>
+                        </ul>
+                    </div>
+                    <div class="soft-card">
+                        <h3>Current Content Strategy:</h3>
+                        <p>Multiple content buckets serving different audience needs - product showcases, community engagement, educational content, and trend-responsive posts. Each serves a different purpose while building toward the same goal.</p>
+                        <h3>The Pattern Recognition:</h3>
+                        <p>After thousands of content experiments across gaming and Web3, you develop intuition for what will resonate before you post it. It's not magic - it's pattern recognition earned through experience.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Philosophy Section -->
+        <section id="philosophy" class="section">
+            <canvas id="philosophy-canvas"></canvas>
+            <div class="parallax-content">
+                <h2 class="section-title" style="text-align: center;">My Philosophy.</h2>
+                <div class="philosophy-divider"></div>
+                <p class="quote">"Good marketing doesn't feel like marketing. It feels like a friend telling you about something they genuinely believe in."</p>
+                <p class="explanation">This isn't just a tagline. It's how I've built every successful campaign. Whether it's a 13-year-old discovering viral content mechanics or a Web3 consultant navigating transparency requirements, the core principle remains: authentic value always wins.</p>
+                <div class="comparison">
+                    <div class="soft-card">
+                        <h3>
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                            Web3 vs Traditional
+                        </h3>
+                        <p>Web3 demands perfect execution and complete transparency. Trust is everything, and once lost, nearly impossible to rebuild.</p>
+                    </div>
+                    <div class="soft-card">
+                        <h3>
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12M12 6v12"/></svg><path d="M17.8 17.8a4 4 0 1 0-12.7 0"/></svg>
+                            Gaming Evolution
+                        </h3>
+                        <p>The industry has shifted from news-driven content to engagement-focused strategies. Algorithm changes mean we need multiple content approaches to satisfy both platforms and audiences.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Next Challenge Section -->
+        <section id="next-challenge" class="section has-parallax-bg">
+            <div class="parallax-content">
+                <h2 class="section-title">Ready for the Next Challenge.</h2>
+                <div class="grid">
+                    <div class="intro-text">
+                        <p>I've spent years learning what works in gaming, content, and Web3. Now I'm looking for the next opportunity to apply these skills where they can make the biggest impact.</p>
+                        <p><strong>THE TRUTH:</strong> I'm not looking for just any role. I want to work with teams building something they're genuinely excited about.</p>
+                    </div>
+                    <div class="soft-card">
+                        <h3>What Excites Me:</h3>
+                        <ul>
+                            <li>Companies building genuinely useful products</li>
+                            <li>Teams that prioritize impact over vanity metrics</li>
+                            <li>Projects where creativity meets strategy</li>
+                            <li>Challenges that require unlearning and relearning</li>
+                        </ul>
+                    </div>
+                    <div class="soft-card">
+                        <h3>What I Bring:</h3>
+                        <ul>
+                            <li>A track record of turning small audiences into engaged communities</li>
+                            <li>Experience launching both traditional content and Web3 projects</li>
+                            <li>The ability to make complex ideas accessible and engaging</li>
+                            <li>Industry intuition developed through years of pattern recognition</li>
+                            <li>Proven ability to adapt expertise across different markets</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Contact Section -->
+        <section id="contact" class="section">
+            <h2 class="section-title" style="text-align: center;">Let's Talk.</h2>
+            <div class="intro-text">
+                <p>If you've made it this far, you probably have a sense of what I'm about. I believe in real growth, building communities, and adding genuine value.</p>
+                <p>I'm not the marketer who got lucky with a viral post. I'm the one who learned, adapted, and mastered two completely different industries by understanding that the best ideas come from fusion, not isolation.</p>
+            </div>
+            <div class="soft-card contact-card">
+                <div class="contact-detail">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <div class="contact-detail-text">
+                        <h4>Based in</h4>
+                        <p>Mumbai, Maharashtra, India</p>
+                    </div>
+                </div>
+                <div class="contact-detail">
+                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    <div class="contact-detail-text">
+                        <h4>Open to</h4>
+                        <p>Remote work and Consulting</p>
+                    </div>
+                </div>
+            </div>
+            <p class="connect-prompt">Tap to connect instantly :)</p>
+            <div class="button-group">
+                <a href="https://www.linkedin.com/in/khotmoin/" target="_blank" class="connect-btn primary magnetic">Connect</a>
+                <a href="https://wa.me/+919075716692" target="_blank" class="connect-btn secondary magnetic">Chat</a>
+            </div>
+            <p class="link-up-prompt">let's link up and share ideas!</p>
+        </section>
+
+    </div>
+    
+    <!-- Modal Container -->
+    <div id="modal-container">
+        <div class="modal-content">
+            <div class="modal-close magnetic">&times;</div>
+            
+            <!-- Esports91 Details -->
+            <div id="esports91" class="modal-details">
+                <h2>Esports91</h2>
+                <h3>Career Foundation</h3>
+                <h4 class="modal-section-title">THE CHALLENGE</h4>
+                <p>Turn a small news vertical with just 100 followers into something people actually cared about. We were essentially building everything from scratch.</p>
+                <h4 class="modal-section-title">THE RESULT</h4>
+                <p>Built the foundation of my professional content strategy through timely news coverage, strategic memes, and collaborations with esports athletes and influencers. We grew the page to 113,000 followers in two years, and complete creative autonomy allowed me to experiment and find what worked.</p>
+                <h4 class="modal-section-title">THE LESSON</h4>
+                <p>Good content isn't about being clever, it's about being useful.</p>
+                <div class="modal-grid">
+                    <img src="Img/Esports91.webp" alt="Esports91 Instagram Profile">
+                    <div class="chart-container">
+                        <canvas id="esports91-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AFK Gaming Details -->
+            <div id="afk-gaming" class="modal-details">
+                <h2>AFK Gaming</h2>
+                <h3>Understanding Content</h3>
+                <h4 class="modal-section-title">THE CHALLENGE</h4>
+                <p>Learn the difference between writing and truly connecting with readers. Master the art of making people stop scrolling and actually read.</p>
+                <h4 class="modal-section-title">THE RESULT</h4>
+                <p>Became the top-performing writer, consistently outperforming a team of 15 writers for two straight months. Specialized in explainer blogs and news articles with perfect topic selection and timing.</p>
+                <h4 class="modal-section-title">THE LESSON</h4>
+                <p>The best gaming content doesn't just catch eyeballs, it starts conversations.</p>
+                <div class="modal-grid single-item">
+                    <img src="Img/AFK.webp" alt="AFK Gaming Website Snippet">
+                </div>
+            </div>
+            
+            <!-- TalkEsport Details -->
+            <div id="talkesport" class="modal-details">
+                <h2>TalkEsport</h2>
+                <h3>My First Head Role</h3>
+                <h4 class="modal-section-title">THE CHALLENGE</h4>
+                <p>Lead content strategy, grow an audience organically, and manage a team while covering major gaming events and launching new products.</p>
+                <h4 class="modal-section-title">THE RESULT</h4>
+                <p>Achieved consistent organic growth through fast news coverage, engaging content across formats, and successful product launches. Led coverage of major gaming events including BGIS 2023, Red Bull MEO Season 6, and multiple Krafton events.</p>
+                <h4 class="modal-section-title">THE LESSON</h4>
+                <p>We didn't try to reach everyone. We focused on reaching the right people.</p>
+                <div class="modal-grid">
+                    <img src="Img/Talkesport.webp" alt="TalkEsport Instagram Profile">
+                    <div class="chart-container">
+                        <canvas id="talkesport-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SKOR Details -->
+            <div id="skor" class="modal-details">
+                <h2>SKOR</h2>
+                <h3>The Web3 Learning Curve</h3>
+                <h4 class="modal-section-title">THE CHALLENGE</h4>
+                <p>Navigate an entirely new industry where my five years of gaming expertise suddenly meant nothing. Web3 audiences operate completely differently than gaming communities.</p>
+                <h4 class="modal-section-title">THE STRUGGLE</h4>
+                <p>Spent months applying gaming content logic to Web3 audiences - and failing spectacularly. Gaming news and traditional tactics fell flat in this new world.</p>
+                <h4 class="modal-section-title">THE BREAKTHROUGH</h4>
+                <p>Realized Web3 audiences don't want gaming content with crypto sprinkled on top. They want to understand the actual product and its value. The moment we started showcasing Agent Precision and explaining token utility, everything clicked.</p>
+                <h4 class="modal-section-title">THE RESULT</h4>
+                <p>Successfully launched multiple Web3 initiatives with strong community engagement. Created Agent Precision mascot concept - an AI companion that felt trustworthy, not intimidating. Built a community that genuinely understood what we were building.</p>
+                <h4 class="modal-section-title">THE LESSON</h4>
+                <p>Sometimes your biggest strength becomes your biggest blind spot. True expertise means knowing when to unlearn everything.</p>
+                <div class="modal-grid">
+                    <img src="Img/SKOR.webp" alt="SKOR Agent Precision Mascot">
+                    <div class="chart-container">
+                        <canvas id="skor-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- BattleBucks Details -->
+            <div id="battlebucks" class="modal-details">
+                <h2>BattleBucks</h2>
+                <h3>Consultancy Project</h3>
+                <h4 class="modal-section-title">THE CHALLENGE</h4>
+                <p>Build anticipation and community for a product that doesn't exist yet, creating genuine interest without overpromising. Navigate the delicate balance of building hype while maintaining transparency.</p>
+                <h4 class="modal-section-title">THE RESULT</h4>
+                <p>Developing comprehensive pre-launch strategy by building mystery, leveraging industry connections built over years, and clearly communicating rewards structure. Successfully acquired significant user base during beta phase.</p>
+                <h4 class="modal-section-title">THE LESSON</h4>
+                <p>Build a community of people who want to be part of the journey, before there's even a product to show.</p>
+                <div class="modal-grid single-item">
+                    <img src="Img/BattleBucks.webp" alt="BattleBucks Instagram Profile">
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="magnetic">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    </button>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const gsap = window.gsap;
+        const ScrollTrigger = window.ScrollTrigger;
+        gsap.registerPlugin(ScrollTrigger);
+
+        // --- Sound Effects ---
+        const audioSwoosh = document.getElementById('audio-swoosh');
+        const audioClick = document.getElementById('audio-click');
+        const audioChime = document.getElementById('audio-chime');
+
+        function playSound(audioElement) {
+            audioElement.currentTime = 0;
+            audioElement.play().catch(error => console.log("Playback prevented. Requires user interaction."));
+        }
+
+        // --- Loading Screen Animation ---
+        const loadingScreen = document.getElementById('loading-screen');
+        const loadingLogo = loadingScreen.querySelector('.logo');
+        
+        gsap.to(loadingLogo, {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: 'power2.out',
+            delay: 0.5,
+            onComplete: () => {
+                gsap.to(loadingScreen, {
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: 'power2.inOut',
+                    onComplete: () => {
+                        loadingScreen.style.display = 'none';
+                        document.body.style.overflowY = 'auto';
+                    }
+                });
+            }
+        });
+
+        // --- Custom Cursor ---
+        const cursor = document.querySelector('.cursor');
+        const follower = document.querySelector('.cursor-follower');
+        
+        gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+        gsap.set(follower, { xPercent: -50, yPercent: -50 });
+
+        window.addEventListener('mousemove', e => {
+            gsap.to(cursor, 0.2, { x: e.clientX, y: e.clientY });
+            gsap.to(follower, 0.6, { x: e.clientX, y: e.clientY });
+        });
+        
+        document.querySelectorAll('a, button, .magnetic, .timeline-content, .modal-close').forEach(el => {
+            el.addEventListener('mouseenter', () => document.body.classList.add('link-hover'));
+            el.addEventListener('mouseleave', () => document.body.classList.remove('link-hover'));
+        });
+        
+        // --- Chime sound for contact button ---
+        document.querySelectorAll('.connect-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                playSound(audioChime);
+            });
+        });
+
+        // --- Dynamic Navigation (Hide on Scroll) ---
+        const nav = document.getElementById('main-nav');
+        ScrollTrigger.create({
+            start: "top top-=" + (nav.offsetHeight + 20),
+            end: 99999,
+            onUpdate: (self) => {
+                if (self.scroll() > 200) {
+                    nav.classList.add("sticky");
+                    if (self.direction === -1) {
+                        nav.classList.remove("nav-hidden");
+                    } else {
+                        nav.classList.add("nav-hidden");
+                    }
+                } else {
+                    nav.classList.remove("sticky", "nav-hidden");
+                }
+            },
+        });
+
+
+        // --- Hero Canvas Animation ---
+        const canvas = document.getElementById('thread-canvas');
+        const ctx = canvas.getContext('2d');
+        let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        let center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+        let points = [];
+        const numPoints = 60;
+        const radius = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+
+        for (let i = 0; i < numPoints; i++) {
+            const angle = (i / numPoints) * Math.PI * 2;
+            points.push({
+                x: center.x + Math.cos(angle) * radius,
+                y: center.y + Math.sin(angle) * radius,
+                originalX: center.x + Math.cos(angle) * radius,
+                originalY: center.y + Math.sin(angle) * radius,
+                noise: Math.random() * 1000
+            });
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        window.addEventListener('mousemove', e => {
+            gsap.to(mouse, {
+                x: e.clientX,
+                y: e.clientY,
+                duration: 1,
+                ease: 'power2.out'
+            });
+        });
+
+        function animateThreads() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            points.forEach((point, i) => {
+                const distToMouse = Math.hypot(point.x - mouse.x, point.y - mouse.y);
+                if (distToMouse < 250) {
+                    ctx.beginPath();
+                    ctx.moveTo(point.x, point.y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.strokeStyle = `rgba(74, 144, 226, ${1 - distToMouse / 250})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+
+                for (let j = i + 1; j < points.length; j++) {
+                    const otherPoint = points[j];
+                    const dist = Math.hypot(point.x - otherPoint.x, point.y - otherPoint.y);
+                    if (dist < 200) {
+                        ctx.beginPath();
+                        ctx.moveTo(point.x, point.y);
+                        ctx.lineTo(otherPoint.x, otherPoint.y);
+                        ctx.strokeStyle = `rgba(44, 62, 80, ${0.5 - dist / 400})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(animateThreads);
+        }
+        animateThreads();
+        
+        // --- Timeline Animation ---
+        gsap.to('.timeline-line-progress', {
+            height: '100%',
+            ease: 'none',
+            scrollTrigger: {
+                trigger: '#career-journey .timeline',
+                start: 'top center',
+                end: 'bottom center',
+                scrub: true
+            }
+        });
+
+        gsap.utils.toArray('.timeline-item').forEach(item => {
+            gsap.to(item, {
+                opacity: 1,
+                y: 0,
+                ease: 'power2.out',
+                scrollTrigger: {
+                    trigger: item,
+                    start: 'top 85%',
+                    end: 'top 50%',
+                    scrub: 1,
+                    onEnter: () => playSound(audioSwoosh),
+                    onEnterBack: () => playSound(audioSwoosh),
+                }
+            });
+        });
+        
+        // --- Animate Metrics on Scroll ---
+        gsap.utils.toArray('.animated-number').forEach(el => {
+            const target = parseInt(el.dataset.target, 10);
+            let counter = { value: 0 };
+
+            ScrollTrigger.create({
+                trigger: el,
+                start: 'top 85%',
+                once: true,
+                onEnter: () => {
+                    gsap.to(counter, {
+                        value: target,
+                        duration: 2,
+                        ease: 'power2.out',
+                        onUpdate: () => {
+                            el.textContent = Math.floor(counter.value).toLocaleString('en-US');
+                        },
+                    });
+                },
+            });
+        });
+
+        // --- Parallax Background Animation ---
+        gsap.utils.toArray('.has-parallax-bg').forEach(section => {
+            gsap.to(section, {
+                '--parallax-y': '-200px',
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: section,
+                    start: 'top bottom',
+                    end: 'bottom top',
+                    scrub: true
+                }
+            });
+        });
+
+        // --- Skills Radar Chart ---
+        const radarChartEl = document.getElementById('skills-radar-chart');
+        let skillsChart;
+
+        const skillsChartConfig = {
+            type: 'radar',
+            data: {
+                labels: ['Community Building', 'Gaming & Web3 Strategy', 'Content Creation', 'Organic Growth'],
+                datasets: [{
+                    label: 'Expertise Level',
+                    data: [90, 85, 95, 88],
+                    backgroundColor: 'rgba(74, 144, 226, 0.2)',
+                    borderColor: 'rgba(74, 144, 226, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(74, 144, 226, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(74, 144, 226, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(44, 62, 80, 0.2)' },
+                        grid: { color: 'rgba(44, 62, 80, 0.2)' },
+                        pointLabels: {
+                            font: {
+                                size: 14,
+                                family: "'Lato', sans-serif",
+                            },
+                            color: '#333'
+                        },
+                        ticks: {
+                            display: false,
+                            stepSize: 25
+                        },
+                        min: 0,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        };
+
+        ScrollTrigger.create({
+            trigger: radarChartEl,
+            start: 'top 80%',
+            once: true,
+            onEnter: () => {
+                if (skillsChart) skillsChart.destroy();
+                skillsChart = new Chart(radarChartEl, skillsChartConfig);
+            }
+        });
+
+
+        // --- Modal Interaction ---
+        const modalContainer = document.getElementById('modal-container');
+        const timelineItems = document.querySelectorAll('.timeline-item');
+        let activeModalChart = null;
+
+        const modalChartConfigs = {
+            'esports91-chart': {
+                type: 'line',
+                data: {
+                    labels: ['Start', 'Year 1', 'Year 2'],
+                    datasets: [{
+                        label: 'Follower Growth',
+                        data: [100, 45000, 113000],
+                        borderColor: 'rgba(74, 144, 226, 1)',
+                        backgroundColor: 'rgba(74, 144, 226, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                }
+            },
+            'talkesport-chart': {
+                type: 'bar',
+                data: {
+                    labels: ['Instagram Growth', 'App Beta Users'],
+                    datasets: [{
+                        label: 'Growth & Acquisition',
+                        data: [25000, 7000],
+                        backgroundColor: ['rgba(74, 144, 226, 0.8)', 'rgba(44, 62, 80, 0.8)']
+                    }]
+                },
+                options: { indexAxis: 'y' }
+            },
+            'skor-chart': {
+                type: 'line',
+                data: {
+                    labels: ['Apr 1', 'Apr 15', 'May 1', 'May 15', 'Jun 1', 'Jul 1', 'Jul 31'],
+                    datasets: [{
+                        label: '$SKORAI Price (USD)',
+                        data: [0.0075, 0.04, 0.10, 0.16, 0.2317, 0.20, 0.1922],
+                        borderColor: 'rgba(10, 200, 110, 1)',
+                        backgroundColor: 'rgba(10, 200, 110, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Price (USD)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `$${context.raw.toFixed(4)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        function openModal(modalId) {
+            playSound(audioClick);
+            document.body.classList.add('modal-open');
+            modalContainer.classList.add('visible');
+            
+            document.querySelectorAll('.modal-details').forEach(el => el.classList.remove('active'));
+            
+            const activeDetail = document.getElementById(modalId);
+            if (activeDetail) {
+                activeDetail.classList.add('active');
+
+                const chartCanvasId = `${modalId}-chart`;
+                const chartCanvas = document.getElementById(chartCanvasId);
+                if (chartCanvas && modalChartConfigs[chartCanvasId]) {
+                    if(activeModalChart) {
+                        activeModalChart.destroy();
+                    }
+                    activeModalChart = new Chart(chartCanvas, modalChartConfigs[chartCanvasId]);
+                }
+            }
+        }
+
+        function closeModal() {
+            playSound(audioClick);
+            document.body.classList.remove('modal-open');
+            modalContainer.classList.remove('visible');
+            if(activeModalChart) {
+                activeModalChart.destroy();
+                activeModalChart = null;
+            }
+        }
+
+        timelineItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const modalId = item.dataset.modalId;
+                if (modalId) {
+                    openModal(modalId);
+                }
+            });
+        });
+
+        modalContainer.addEventListener('click', (e) => {
+            if (e.target === modalContainer || e.target.classList.contains('modal-close')) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalContainer.classList.contains('visible')) {
+                closeModal();
+            }
+        });
+        
+        // --- Back to Top Button ---
+        const backToTopButton = document.getElementById('back-to-top');
+
+        if (backToTopButton) {
+            backToTopButton.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            ScrollTrigger.create({
+                start: 'top -500',
+                end: 99999,
+                onUpdate: self => {
+                    if (self.isActive) {
+                        backToTopButton.classList.add('visible');
+                    } else {
+                        backToTopButton.classList.remove('visible');
+                    }
+                }
+            });
+        }
+
+        // --- Philosophy Canvas Animation ---
+        const philosophyCanvas = document.getElementById('philosophy-canvas');
+        if (philosophyCanvas) {
+            const pctx = philosophyCanvas.getContext('2d');
+            let p_particles = [];
+
+            function resizePhilosophyCanvas() {
+                const section = document.getElementById('philosophy');
+                philosophyCanvas.width = section.offsetWidth;
+                philosophyCanvas.height = section.offsetHeight;
+            }
+            
+            class P_Particle {
+                constructor() {
+                    this.x = Math.random() * philosophyCanvas.width;
+                    this.y = Math.random() * philosophyCanvas.height;
+                    this.size = Math.random() * 1.5 + 1;
+                    this.speedX = Math.random() * 0.5 - 0.25;
+                    this.speedY = Math.random() * 0.5 - 0.25;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    if (this.x < 0 || this.x > philosophyCanvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > philosophyCanvas.height) this.speedY *= -1;
+                }
+                draw() {
+                    pctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    pctx.beginPath();
+                    pctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    pctx.fill();
+                }
+            }
+
+            function initPhilosophyParticles() {
+                p_particles = [];
+                let numberOfParticles = philosophyCanvas.width / 20;
+                for (let i = 0; i < numberOfParticles; i++) {
+                    p_particles.push(new P_Particle());
+                }
+            }
+
+            function handlePhilosophyParticles() {
+                for (let i = 0; i < p_particles.length; i++) {
+                    p_particles[i].update();
+                    p_particles[i].draw();
+                    for (let j = i; j < p_particles.length; j++) {
+                        const dx = p_particles[i].x - p_particles[j].x;
+                        const dy = p_particles[i].y - p_particles[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < 100) {
+                            pctx.beginPath();
+                            pctx.strokeStyle = `rgba(255, 255, 255, ${1 - distance/100})`;
+                            pctx.lineWidth = 0.2;
+                            pctx.moveTo(p_particles[i].x, p_particles[i].y);
+                            pctx.lineTo(p_particles[j].x, p_particles[j].y);
+                            pctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animatePhilosophy() {
+                pctx.clearRect(0, 0, philosophyCanvas.width, philosophyCanvas.height);
+                handlePhilosophyParticles();
+                requestAnimationFrame(animatePhilosophy);
+            }
+
+            resizePhilosophyCanvas();
+            initPhilosophyParticles();
+            animatePhilosophy();
+            window.addEventListener('resize', () => {
+                resizePhilosophyCanvas();
+                initPhilosophyParticles();
+            });
+
+            // Animate icons on scroll
+            gsap.utils.toArray('#philosophy .comparison .icon').forEach(icon => {
+                gsap.to(icon, {
+                    opacity: 1,
+                    x: 0,
+                    duration: 0.8,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: icon,
+                        start: 'top 90%'
+                    }
+                });
+            });
+        }
+    });
+    </script>
+</body>
+</html>
